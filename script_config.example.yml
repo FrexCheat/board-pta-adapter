@@ -1,0 +1,8 @@
+fetcher:
+  pta_session: xxx
+  problem_set_id: "xx"
+  output_dir: ./data
+
+contest:
+  standard_1: 800
+  standard_2: 400

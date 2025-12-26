@@ -1,0 +1,13 @@
+[project]
+name = "board-gplt-fetcher"
+version = "0.1.0"
+description = "GPLT Competition Leaderboard Fetcher of ZZULI"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "loguru>=0.7.3",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "pyyaml>=6.0.3",
+    "requests>=2.32.5",
+]

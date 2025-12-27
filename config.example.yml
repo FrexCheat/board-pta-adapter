@@ -1,0 +1,17 @@
+output_dir: ./output
+
+fetcher:
+  pta_session: xxx
+  problem_set_id: "xx"
+
+contest:
+  standard_1: 800
+  standard_2: 400
+
+generator:
+  excel_dir: ./xlsx
+  excel_name: "template.xlsx"
+  sheet_name: "template"
+
+# in seconds
+sync_interval: 15

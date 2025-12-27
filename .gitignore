@@ -7,11 +7,15 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
+
+#ruff cache
+.ruff-cache/
 
 #custom ignore
-data/*.json
-*.xlsx
-*.xls
-
-script_config.yml
+output/*.json
+xlsx/*.xls
+xlsx/*.xlsx
+!xlsx/template.xls
+!xlsx/template.xlsx
+config.yml

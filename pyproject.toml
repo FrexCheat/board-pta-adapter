@@ -1,7 +1,7 @@
 [project]
-name = "fetcher"
+name = "board-pta-adapter"
 version = "0.1.0"
-description = "GPLT Competition Leaderboard Fetcher of ZZULI"
+description = "GPLT/XCPC Competition Leaderboard Adapter for PTA"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

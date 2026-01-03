@@ -13,7 +13,8 @@ wheels/
 .ruff-cache/
 
 #custom ignore
-output/*.json
+output/**/*.json
 xlsx/*.xlsx
-!xlsx/template.xlsx
+!xlsx/*.template.xlsx
 config.yml
+review.txt

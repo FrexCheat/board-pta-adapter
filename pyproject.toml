@@ -1,6 +1,6 @@
 [project]
 name = "board-pta-adapter"
-version = "0.1.0"
+version = "1.0.0"
 description = "GPLT/XCPC Competition Leaderboard Adapter for PTA"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,20 +8,21 @@ dependencies = [
     "loguru>=0.7.3",
     "openpyxl>=3.1.5",
     "pandas>=2.3.3",
+    "pydantic>=2.12.5",
     "pyyaml>=6.0.3",
     "requests>=2.32.5",
 ]
 
 [project.scripts]
-gen = "fetcher.app.gen:main"
-sync = "fetcher.app.sync:main"
+gplt-gen = "adapter.cli.gplt:generate"
+gplt-sync = "adapter.cli.gplt:synchronize"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["fetcher"]
+packages = ["src/adapter"]
 
 [tool.ruff]
 line-length = 120

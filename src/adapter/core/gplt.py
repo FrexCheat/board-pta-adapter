@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 from typing import List
 
 from adapter.models.config import Config
@@ -11,7 +10,7 @@ from common.utils.excel import SheetReader
 class GPLTAdapter:
     def __init__(self, config: Config):
         self.config = config
-        self.sheet = SheetReader(Path(config.gplt.excel_path), config.gplt.sheet_name)
+        self.sheet = SheetReader(config.gplt.excel_path, config.gplt.sheet_name)
         self.pta_client = PTAClient(
             pta_session=config.pta.pta_session,
             problem_set_id=config.pta.problem_set_id,

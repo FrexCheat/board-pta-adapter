@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 
 from loguru import logger
 
@@ -13,7 +12,7 @@ def generate() -> None:
     try:
         config = IConfig.load()
         adapter = GPLTAdapter(config)
-        storage = OutputStorage(Path(config.gplt.output_dir))
+        storage = OutputStorage(config.gplt.output_dir)
 
         logger.info("generating contest.json...")
         contest = adapter.get_contest()
@@ -40,7 +39,7 @@ def synchronize() -> None:
         try:
             config = IConfig.load()
             adapter = GPLTAdapter(config)
-            storage = OutputStorage(Path(config.gplt.output_dir))
+            storage = OutputStorage(config.gplt.output_dir)
 
             logger.info("generating rankings.json...")
             rankings = adapter.get_rankings()

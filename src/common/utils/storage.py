@@ -4,8 +4,8 @@ from typing import Any
 
 
 class OutputStorage:
-    def __init__(self, base_dir: Path) -> None:
-        self.base_dir = base_dir
+    def __init__(self, base_dir: str) -> None:
+        self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def write_json(self, filename: str, data: Any) -> Path:

@@ -4,8 +4,8 @@ import pandas as pd
 
 
 class SheetReader:
-    def __init__(self, excel_path: Path, sheet_name: str) -> None:
-        self.excel_path = excel_path
+    def __init__(self, excel_path: str, sheet_name: str) -> None:
+        self.excel_path = Path(excel_path)
         self.sheet_name = sheet_name
         self._cache: pd.DataFrame | None = None
 

@@ -15,6 +15,6 @@ wheels/
 #custom ignore
 output/**/*.json
 xlsx/*.xlsx
-!xlsx/*.template.xlsx
+!xlsx/template.*.xlsx
 config.yml
 review.txt

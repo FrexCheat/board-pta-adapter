@@ -2,7 +2,7 @@ import time
 
 from loguru import logger
 
-from adapter.core.config import IConfig
+from adapter.config import IConfig
 from adapter.core.gplt import GPLTAdapter
 from common.utils.storage import OutputStorage
 

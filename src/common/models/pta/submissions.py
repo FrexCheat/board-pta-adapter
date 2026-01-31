@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from .common_rankings import ExamMember, PTAUser, StudentUser
+from .base import ExamUser, PTAUser, StudentUser
 from .problem_types import Problem
 
 
@@ -27,7 +27,7 @@ class Submissions(BaseModel):
     hasBefore: bool
     total: int
     problemSetProblemById: Dict[str, Problem]
-    examMemberByUserId: Dict[str, ExamMember]
+    examMemberByUserId: Dict[str, ExamUser]
     showDetailBySubmissionId: Dict[str, bool]
     userById: Dict[str, PTAUser]
     studentUserById: Dict[str, StudentUser]

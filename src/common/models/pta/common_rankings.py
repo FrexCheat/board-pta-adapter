@@ -2,23 +2,7 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel
 
-
-class PTAUser(BaseModel):
-    id: str
-    nickname: str
-
-
-class StudentUser(BaseModel):
-    studentNumber: str
-    name: str
-    id: str
-
-
-class ExamMember(BaseModel):
-    examId: str
-    userId: str
-    userGroupId: str
-    studentUserId: str
+from .base import ExamUser, PTAUser, StudentUser
 
 
 class ProblemScoreDetail(BaseModel):
@@ -28,9 +12,9 @@ class ProblemScoreDetail(BaseModel):
     submitCountSnapshot: int
 
 
-class _CommonRanking(BaseModel):
+class CommonRanking(BaseModel):
     rank: int
-    user: ExamMember
+    user: ExamUser
     examId: str
     totalScore: int
     typeScores: Dict[str, int]
@@ -44,6 +28,6 @@ class CommonRankings(BaseModel):
     userById: Dict[str, PTAUser]
     studentUserById: Dict[str, StudentUser]
     labels: List[str]
-    commonRankings: List[_CommonRanking]
+    commonRankings: List[CommonRanking]
     selfRanking: Dict[str, Any]
     labelByProblemSetProblemId: Dict[str, str]

@@ -38,8 +38,8 @@ def generate() -> None:
 
 
 def synchronize() -> None:
+    logger.info("===> starting to synchronize submissions data...")
     config, adapter, storage = ____init____()
-    logger.info("===> starting to synchronize rankings data...")
     while True:
         try:
             logger.info("generating runs.json...")

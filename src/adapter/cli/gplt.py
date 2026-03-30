@@ -7,13 +7,22 @@ from adapter.core.gplt import GPLTAdapter
 from common.utils.storage import OutputStorage
 
 
-def generate() -> None:
-    logger.info("===> starting to generate static data...")
+def ____init____():
     try:
         config = IConfig.load()
         adapter = GPLTAdapter(config)
         storage = OutputStorage(config.gplt.output_dir)
+    except Exception as e:
+        logger.error("===> failed to initialize loader.")
+        logger.error(e)
+        raise
+    return config, adapter, storage
 
+
+def generate() -> None:
+    logger.info("===> starting to generate static data...")
+    config, adapter, storage = ____init____()
+    try:
         logger.info("generating contest.json...")
         contest = adapter.get_contest()
         storage.write_json("contest.json", contest.model_dump())
@@ -34,13 +43,9 @@ def generate() -> None:
 
 def synchronize() -> None:
     logger.info("===> starting to synchronize rankings data...")
-
+    config, adapter, storage = ____init____()
     while True:
         try:
-            config = IConfig.load()
-            adapter = GPLTAdapter(config)
-            storage = OutputStorage(config.gplt.output_dir)
-
             logger.info("generating rankings.json...")
             rankings = adapter.get_rankings()
             storage.write_json("rankings.json", [r.model_dump() for r in rankings])

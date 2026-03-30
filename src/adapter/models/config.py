@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from pydantic import BaseModel
 
 
@@ -20,14 +18,8 @@ class XCPCIOConfig(BaseModel):
     output_dir: str
     excel_path: str
     sheet_name: str
-    start: str
-    end: str
-    frozen_time: int
-    problem_quantity: int
-    balloon_color: List[str]
-    group: Dict[str, str]
-    medal: Dict[str, Dict[str, int]]
-    logo: Dict[str, str]
+    contest_path: str
+    frozen_diff: int
 
 
 class Config(BaseModel):

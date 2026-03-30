@@ -8,6 +8,7 @@ dependencies = [
     "loguru>=0.7.3",
     "openpyxl>=3.1.5",
     "pandas>=2.3.3",
+    "pendulum>=3.2.0",
     "pydantic>=2.12.5",
     "pyyaml>=6.0.3",
     "requests>=2.32.5",
@@ -16,6 +17,8 @@ dependencies = [
 [project.scripts]
 gplt-gen = "adapter.cli.gplt:generate"
 gplt-sync = "adapter.cli.gplt:synchronize"
+xcpcio-gen = "adapter.cli.xcpcio:generate"
+xcpcio-sync = "adapter.cli.xcpcio:synchronize"
 
 [build-system]
 requires = ["hatchling"]
@@ -25,7 +28,7 @@ build-backend = "hatchling.build"
 packages = ["src/adapter"]
 
 [tool.ruff]
-line-length = 120
+line-length = 130
 
 [dependency-groups]
 dev = [

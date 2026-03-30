@@ -49,6 +49,6 @@ class PTAClient:
         return CommonRankings.model_validate(payload)
 
     def fetch_submissions(self, before: str, limit: int) -> Submissions:
-        params = {"before": before, "limit": limit, "filter": "%7B%7D"}
+        params = {"before": before, "limit": limit, "filter": "{}"}
         payload = self._get(f"/problem-sets/{self.problem_set_id}/submissions", params=params)
         return Submissions.model_validate(payload)

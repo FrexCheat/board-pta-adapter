@@ -1,6 +1,8 @@
 import time
 from typing import List
 
+from pydantic import TypeAdapter
+
 from adapter.models.config import Config
 from adapter.models.gplt import Contest, Ranking, Student, Team
 from common.pta.client import PTAClient
@@ -26,7 +28,8 @@ class GPLTAdapter:
             standard_2=self.config.gplt.standard_2,
             problems=[{"id": p.id, "label": p.label, "score": p.score} for p in problem_list],
         )
-        return contest
+        _contest = Contest.model_validate(contest)
+        return _contest
 
     def get_students(self) -> List[Student]:
         students: List[Student] = []
@@ -37,10 +40,9 @@ class GPLTAdapter:
         df["id"] = df["id"].astype(str).str.strip()
         df["team_id"] = df["team_id"].astype(str).str.strip()
         df["name"] = df["name"].astype(str).str.strip()
+        student_list_adapter = TypeAdapter(List[Student])
         data = df.to_dict(orient="records")
-        for item in data:
-            student = Student.model_validate(item)
-            students.append(student)
+        students = student_list_adapter.validate_python(data)
         return students
 
     def get_teams(self) -> List[Team]:
@@ -50,10 +52,10 @@ class GPLTAdapter:
         df = source.iloc[:, [1, 4, 3, 5, 6]].copy()
         df.columns = ["id", "name", "school", "college", "class"]
         df["id"] = df["id"].astype(str).str.strip()
+        df = df.drop_duplicates(subset=["id"], keep="first")
         data = df.to_dict(orient="records")
-        for item in data:
-            team = Team.model_validate(item)
-            teams.append(team)
+        team_list_adapter = TypeAdapter(List[Team])
+        teams = team_list_adapter.validate_python(data)
         return teams
 
     def get_rankings(self) -> List[Ranking]:
@@ -72,6 +74,7 @@ class GPLTAdapter:
                     score=item.totalScore,
                     problems_score={k: v.score for k, v in item.problemScoreByProblemSetProblemId.items()},
                 )
-                rankings.append(ranking)
+                _ranking = Ranking.model_validate(ranking)
+                rankings.append(_ranking)
             time.sleep(1)
         return rankings

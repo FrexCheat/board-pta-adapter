@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SubmissionStatus(StrEnum):
@@ -67,7 +67,7 @@ class Team(BaseModel):
     id: str = None
     name: str = None
     organization_id: str = None
-    group: List[str] = []
+    group: List[str] = Field(default_factory=list)
     coaches: Optional[List[str]] = None
     members: Optional[List[str]] = None
     location: Optional[str] = None

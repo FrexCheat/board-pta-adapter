@@ -66,7 +66,7 @@ class GPLTAdapter:
         page_count = total_count // 100 + (1 if total_count % 100 else 0)
 
         for page in range(page_count):
-            common_rankings = self.pta_client.fetch_common_rankings(page, 100)
+            common_rankings = first_page if page == 0 else self.pta_client.fetch_common_rankings(page, 100)
             for idx, item in enumerate(common_rankings.commonRankings):
                 ranking = Ranking(
                     id=common_rankings.studentUserById[item.user.studentUserId].studentNumber,

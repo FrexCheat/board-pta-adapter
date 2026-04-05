@@ -9,6 +9,40 @@ from adapter.models.xcpcio import Organization, Submission, SubmissionStatus, Te
 from common.pta.client import PTAClient
 from common.utils.excel import SheetReader
 
+LANGUAGE_MAPPING = {
+    "GCC": "C",
+    "CLANG": "C",
+    "MODERN_GCC": "C",
+    "GXX": "C++",
+    "CLANGXX": "C++",
+    "PYPY3": "Python",
+    "PYTHON3": "Python",
+    "PYTHON2": "Python",
+    "JAVAC": "Java",
+}
+
+STATUS_MAPPING = {
+    "WAIT": SubmissionStatus.WAITING,
+    "WAITING": SubmissionStatus.WAITING,
+    "PENDING": SubmissionStatus.PENDING,
+    "JUDGING": SubmissionStatus.JUDGING,
+    "RUNNING": SubmissionStatus.RUNNING,
+    "ACCEPTED": SubmissionStatus.ACCEPTED,
+    "WRONG_ANSWER": SubmissionStatus.WRONG_ANSWER,
+    "COMPILE_ERROR": SubmissionStatus.COMPILATION_ERROR,
+    "RUNTIME_ERROR": SubmissionStatus.RUNTIME_ERROR,
+    "SEGMENTATION_FAULT": SubmissionStatus.RUNTIME_ERROR,
+    "NON_ZERO_EXIT_CODE": SubmissionStatus.RUNTIME_ERROR,
+    "FLOAT_POINT_EXCEPTION": SubmissionStatus.RUNTIME_ERROR,
+    "TIME_LIMIT_EXCEEDED": SubmissionStatus.TIME_LIMIT_EXCEEDED,
+    "MEMORY_LIMIT_EXCEEDED": SubmissionStatus.MEMORY_LIMIT_EXCEEDED,
+    "OUTPUT_LIMIT_EXCEEDED": SubmissionStatus.OUTPUT_LIMIT_EXCEEDED,
+    "PRESENTATION_ERROR": SubmissionStatus.PRESENTATION_ERROR,
+    "SYSTEM_ERROR": SubmissionStatus.SYSTEM_ERROR,
+}
+
+OFFICIAL_SCHOOLS = {"郑州轻工业大学"}
+
 
 class XCPCIOAdapter:
     def __init__(self, config: Config):
@@ -21,36 +55,11 @@ class XCPCIOAdapter:
 
     @staticmethod
     def get_languages(language: str) -> str:
-        language_mapping = {
-            "GCC": "C",
-            "CLANG": "C",
-            "MODERN_GCC": "C",
-            "GXX": "C++",
-            "CLANGXX": "C++",
-            "PYPY3": "Python",
-            "PYTHON3": "Python",
-            "PYTHON2": "Python",
-            "JAVAC": "Java",
-        }
-        return language_mapping.get(language, language)
+        return LANGUAGE_MAPPING.get(language, language)
 
     @staticmethod
     def get_status(status: str) -> SubmissionStatus:
-        status_mapping = {
-            "ACCEPTED": SubmissionStatus.ACCEPTED,
-            "PRESENTATION_ERROR": SubmissionStatus.PRESENTATION_ERROR,
-            "WRONG_ANSWER": SubmissionStatus.WRONG_ANSWER,
-            "RUNTIME_ERROR": SubmissionStatus.RUNTIME_ERROR,
-            "SEGMENTATION_FAULT": SubmissionStatus.RUNTIME_ERROR,
-            "NON_ZERO_EXIT_CODE": SubmissionStatus.RUNTIME_ERROR,
-            "FLOAT_POINT_EXCEPTION": SubmissionStatus.RUNTIME_ERROR,
-            "COMPILE_ERROR": SubmissionStatus.COMPILATION_ERROR,
-            "TIME_LIMIT_EXCEEDED": SubmissionStatus.TIME_LIMIT_EXCEEDED,
-            "MEMORY_LIMIT_EXCEEDED": SubmissionStatus.MEMORY_LIMIT_EXCEEDED,
-            "OUTPUT_LIMIT_EXCEEDED": SubmissionStatus.OUTPUT_LIMIT_EXCEEDED,
-            "SYSTEM_ERROR": SubmissionStatus.SYSTEM_ERROR,
-        }
-        return status_mapping.get(status, status)
+        return STATUS_MAPPING.get(status, SubmissionStatus.UNKNOWN)
 
     def get_organizations(self, enable_logo: bool = True) -> List[Organization]:
         organizations: List[Organization] = []
@@ -77,12 +86,12 @@ class XCPCIOAdapter:
 
     def get_teams(self, single: bool = False) -> List[Team]:
         teams: List[Team] = []
-        official_schools = set(["郑州轻工业大学"])
 
         source = self.sheet.load()
         df = source.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7]].copy()
         df.columns = ["room", "loc_num", "id", "name", "school", "member_1", "member_2", "member_3"]
         df["id"] = df["id"].astype(str).str.strip()
+        df["name"] = df["name"].astype(str)
         df["loc_num"] = df["loc_num"].astype(str).str.strip()
         df["school"] = df["school"].astype(str).str.strip()
         df["member_1"] = df["member_1"].astype(str).str.strip()
@@ -97,7 +106,7 @@ class XCPCIOAdapter:
             _teams["organization_id"] = _hash
 
             _teams["group"] = []
-            if item["school"] in official_schools:
+            if item["school"] in OFFICIAL_SCHOOLS:
                 _teams["group"].append("official")
             else:
                 _teams["group"].append("unofficial")
@@ -113,7 +122,7 @@ class XCPCIOAdapter:
             teams.append(team)
         return teams
 
-    def get_submissions(self, isFrozen: bool = True) -> List[Submission]:
+    def get_submissions(self, is_frozen: bool = True) -> List[Submission]:
         submissions: List[Submission] = []
 
         _contest_info = self.pta_client.fetch_problem_set()
@@ -138,8 +147,8 @@ class XCPCIOAdapter:
                 _timestamp = (_submit_at - _start_time).total_seconds() * 1000
                 _submission["timestamp"] = _timestamp
 
-                if isFrozen and _submit_at > _frozen_time:
-                    _submission["status"] = "FROZEN"
+                if is_frozen and _submit_at > _frozen_time:
+                    _submission["status"] = SubmissionStatus.FROZEN
                 else:
                     _submission["status"] = self.get_status(s.status)
 

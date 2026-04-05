@@ -2,26 +2,18 @@ import time
 
 from loguru import logger
 
-from adapter.config import IConfig
+from adapter.cli._shared import build_runtime
 from adapter.core.gplt import GPLTAdapter
-from common.utils.storage import OutputStorage
+from common.pta.client import PTAClientError
 
 
-def ____init____():
-    try:
-        config = IConfig.load()
-        adapter = GPLTAdapter(config)
-        storage = OutputStorage(config.gplt.output_dir)
-    except Exception as e:
-        logger.error("===> failed to initialize loader.")
-        logger.error(e)
-        raise
-    return config, adapter, storage
+def _build_runtime():
+    return build_runtime(GPLTAdapter, lambda config: config.gplt.output_dir)
 
 
 def generate() -> None:
     logger.info("===> starting to generate static data...")
-    config, adapter, storage = ____init____()
+    _, adapter, storage = _build_runtime()
     try:
         logger.info("generating contest.json...")
         contest = adapter.get_contest()
@@ -36,24 +28,25 @@ def generate() -> None:
         storage.write_json("teams.json", [t.model_dump(by_alias=True) for t in teams])
 
         logger.success("===> static data generated successfully.")
-    except Exception as e:
-        logger.error("===> failed to generate static data.")
-        logger.error(e)
+    except Exception:
+        logger.exception("===> failed to generate static data.")
+        raise
 
 
 def synchronize() -> None:
     logger.info("===> starting to synchronize rankings data...")
-    config, adapter, storage = ____init____()
+    config, adapter, storage = _build_runtime()
     while True:
         try:
             logger.info("generating rankings.json...")
             rankings = adapter.get_rankings()
             storage.write_json("rankings.json", [r.model_dump() for r in rankings])
-
             logger.success("===> rankings data synchronized successfully.")
-        except Exception as e:
-            logger.error("===> failed to synchronize rankings data.")
-            logger.error(e)
+        except PTAClientError:
+            logger.exception("===> failed to synchronize rankings data after exhausting PTA retries.")
+            raise
+        except Exception:
+            logger.exception("===> failed to synchronize rankings data.")
 
         logger.info(f"sleep for {config.sync_interval} seconds before next synchronization...")
         time.sleep(config.sync_interval)

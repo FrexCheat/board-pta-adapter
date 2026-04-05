@@ -61,6 +61,9 @@ class XCPCIOAdapter:
     def get_status(status: str) -> SubmissionStatus:
         return STATUS_MAPPING.get(status, SubmissionStatus.UNKNOWN)
 
+    def get_config(self) -> dict:
+        return self.config.xcpcio.config
+
     def get_organizations(self, enable_logo: bool = True) -> List[Organization]:
         organizations: List[Organization] = []
 
@@ -131,7 +134,7 @@ class XCPCIOAdapter:
 
         _start_time = pendulum.parse(_contest_info.problemSet.startAt)
         _end_time = pendulum.parse(_contest_info.problemSet.endAt)
-        _frozen_time = _end_time.subtract(seconds=self.config.xcpcio.frozen_diff)
+        _frozen_time = _end_time.subtract(seconds=self.config.xcpcio.config.frozen_time)
         _problem_mapping = {p.id: p.problemPoolIndex - 1 for p in _problem_info.labels}
 
         while _submissions_info.submissions:

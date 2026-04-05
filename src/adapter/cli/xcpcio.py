@@ -15,6 +15,10 @@ def generate() -> None:
     logger.info("===> starting to generate static data...")
     _, adapter, storage = _build_runtime()
     try:
+        logger.info("generating config.json...")
+        config = adapter.get_config()
+        storage.write_json("config.json", config)
+
         logger.info("generating organizations.json...")
         organizations = adapter.get_organizations()
         storage.write_json("organizations.json", [o.model_dump(by_alias=True, exclude_unset=True) for o in organizations])

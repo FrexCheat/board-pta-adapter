@@ -19,7 +19,7 @@ class XCPCIOConfig(BaseModel):
     excel_path: str
     sheet_name: str
     contest_path: str
-    frozen_diff: int
+    config: dict
 
 
 class Config(BaseModel):

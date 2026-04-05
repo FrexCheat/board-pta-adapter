@@ -6,7 +6,7 @@ pta:
 
 gplt:
   output_dir: "./output/gplt"
-  excel_path: "./xlsx/gplt.xlsx"
+  excel_path: "./templates/gplt.xlsx"
   sheet_name: "template"
 
   standard_1: 800
@@ -14,8 +14,35 @@ gplt:
 
 xcpcio:
   output_dir: "./output/xcpcio"
-  excel_path: "./xlsx/xcpc.xlsx"
+  excel_path: "./templates/xcpc.xlsx"
   sheet_name: "template"
-
   contest_path: "school-contest/zzuli/school-based/18th"
-  frozen_diff: 3600
+  config:
+    contest_name: ""
+    start_time: 1775440800000 # milliseconds
+    end_time: 1775458800000 # milliseconds
+    penalty: 1200 # seconds
+    frozen_time: 3600 # seconds
+    problem_id: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+    balloon_color: ["#e25b2e", "#f8b7bd", "#14247c", "#203c30", "#4aa0dd", "#0f9493", "#0d9646", "#ffffff", "#fc63a3", "#ff0000", "#ffff00", "#6b48a6"]
+    options:
+      enable_organization: true
+      submission_timestamp_unit: "millisecond"
+    organizations:
+      url: "organizations.json"
+    logo:
+      preset: "ZZULI"
+    status_time_display:
+      correct: true
+      incorrect: true
+      pending: true
+    group:
+      official: "校内队伍"
+      unofficial: "校外队伍"
+    medal:
+      official:
+        gold: 5
+        silver: 8
+        bronze: 12
+      unofficial:
+        gold: 10

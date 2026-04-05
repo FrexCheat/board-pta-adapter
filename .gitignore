@@ -10,12 +10,16 @@ wheels/
 .venv/
 
 #ruff cache
-.ruff-cache/
+.ruff_cache/
 
 #custom ignore
+.agents/
+.codex/
 xlsx/
 output/
 templates/*.xlsx
 !templates/template.*.xlsx
 config.yaml
 review.txt
+skills-lock.json
+AGENTS.md

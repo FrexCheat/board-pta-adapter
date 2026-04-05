@@ -19,9 +19,9 @@ def generate() -> None:
         organizations = adapter.get_organizations()
         storage.write_json("organizations.json", [o.model_dump(by_alias=True, exclude_unset=True) for o in organizations])
 
-        logger.info("generating teams.json...")
+        logger.info("generating team.json...")
         teams = adapter.get_teams()
-        storage.write_json("teams.json", [t.model_dump(by_alias=True, exclude_unset=True) for t in teams])
+        storage.write_json("team.json", [t.model_dump(by_alias=True, exclude_unset=True) for t in teams])
 
         logger.success("===> static data generated successfully.")
     except Exception:
@@ -34,9 +34,9 @@ def synchronize() -> None:
     config, adapter, storage = _build_runtime()
     while True:
         try:
-            logger.info("generating runs.json...")
+            logger.info("generating run.json...")
             submissions = adapter.get_submissions()
-            storage.write_json("runs.json", [s.model_dump() for s in submissions])
+            storage.write_json("run.json", [s.model_dump() for s in submissions])
             logger.success("===> submissions data synchronized successfully.")
         except PTAClientError:
             logger.exception("===> failed to synchronize submissions data after exhausting PTA retries.")

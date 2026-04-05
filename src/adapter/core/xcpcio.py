@@ -92,8 +92,8 @@ class XCPCIOAdapter:
         df.columns = ["room", "loc_num", "id", "name", "school", "member_1", "member_2", "member_3"]
         df["id"] = df["id"].astype(str).str.strip()
         df["name"] = df["name"].astype(str)
-        df["loc_num"] = df["loc_num"].astype(str).str.strip()
         df["school"] = df["school"].astype(str).str.strip()
+        df["loc_num"] = df["loc_num"].astype(str).str.strip()
         df["member_1"] = df["member_1"].astype(str).str.strip()
         df["member_2"] = df["member_2"].astype(str).str.strip()
         df["member_3"] = df["member_3"].astype(str).str.strip()

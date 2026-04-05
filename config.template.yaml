@@ -46,3 +46,6 @@ xcpcio:
         bronze: 12
       unofficial:
         gold: 10
+
+cdp:
+  output_dir: "./output/cdp"

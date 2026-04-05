@@ -2,7 +2,7 @@ import time
 
 from loguru import logger
 
-from adapter.cli._shared import build_runtime
+from adapter.cli.shared import build_runtime
 from adapter.core.gplt import GPLTAdapter
 from common.pta.client import PTAClientError
 

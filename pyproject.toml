@@ -19,6 +19,7 @@ gplt-gen = "adapter.cli.gplt:generate"
 gplt-sync = "adapter.cli.gplt:synchronize"
 xcpcio-gen = "adapter.cli.xcpcio:generate"
 xcpcio-sync = "adapter.cli.xcpcio:synchronize"
+cdp-gen = "adapter.cli.cdp:generate"
 
 [build-system]
 requires = ["hatchling"]
@@ -28,7 +29,7 @@ build-backend = "hatchling.build"
 packages = ["src/adapter"]
 
 [tool.ruff]
-line-length = 130
+line-length = 120
 
 [dependency-groups]
 dev = [

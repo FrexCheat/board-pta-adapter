@@ -1,10 +1,10 @@
 import hashlib
 import time
-from typing import List
+from typing import List, Tuple
 
 import pendulum
 
-from adapter.models.config import Config
+from adapter.models.config import Config, XCPCIOConfigJsonConfig
 from adapter.models.xcpcio import Organization, Submission, SubmissionStatus, Team
 from common.pta.client import PTAClient
 from common.utils.excel import SheetReader
@@ -61,7 +61,7 @@ class XCPCIOAdapter:
     def get_status(status: str) -> SubmissionStatus:
         return STATUS_MAPPING.get(status, SubmissionStatus.UNKNOWN)
 
-    def get_config(self) -> dict:
+    def get_config(self) -> XCPCIOConfigJsonConfig:
         return self.config.xcpcio.config
 
     def get_organizations(self, enable_logo: bool = True) -> List[Organization]:
@@ -125,8 +125,9 @@ class XCPCIOAdapter:
             teams.append(team)
         return teams
 
-    def get_submissions(self, is_frozen: bool = True) -> List[Submission]:
+    def get_submissions(self, is_frozen: bool = True) -> Tuple[List[Submission], List[Submission]]:
         submissions: List[Submission] = []
+        submissions_unfrozen: List[Submission] = []
 
         _contest_info = self.pta_client.fetch_problem_set()
         _problem_info = self.pta_client.fetch_problem_types()
@@ -142,6 +143,7 @@ class XCPCIOAdapter:
             _studentUserById = _submissions_info.studentUserById
             for s in _submissions_info.submissions:
                 _submission = dict()
+                _submission_unfrozen = dict()
                 _submission["id"] = s.id
                 _submission["team_id"] = _studentUserById[_examMemberByUserId[s.userId].studentUserId].studentNumber
                 _submission["problem_id"] = _problem_mapping.get(s.problemSetProblemId)
@@ -156,10 +158,18 @@ class XCPCIOAdapter:
                     _submission["status"] = self.get_status(s.status)
 
                 _submission["language"] = self.get_languages(s.compiler)
+
+                _submission_unfrozen = _submission.copy()
+                _submission_unfrozen["status"] = self.get_status(s.status)
+
                 submission = Submission.model_validate(_submission)
+                submission_unfrozen = Submission.model_validate(_submission_unfrozen)
                 submissions.append(submission)
+                submissions_unfrozen.append(submission_unfrozen)
 
             time.sleep(1)
-            _submissions_info = self.pta_client.fetch_submissions(before=_submissions_info.submissions[-1].id, limit=200)
+            _submissions_info = self.pta_client.fetch_submissions(
+                before=_submissions_info.submissions[-1].id, limit=200
+            )
 
-        return submissions
+        return submissions, submissions_unfrozen

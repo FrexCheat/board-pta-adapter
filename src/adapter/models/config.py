@@ -21,7 +21,7 @@ class XCPCIOConfigJsonConfig(BaseModel):
     penalty: int
     frozen_time: int
     problem_id: list[str]
-    balloon_color: list[str]
+    balloon_color: list[dict]
     options: dict
     organizations: dict
     logo: dict

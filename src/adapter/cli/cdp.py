@@ -176,7 +176,7 @@ def generate() -> None:
             storage.write_raw("event-feed.ndjson", json.dumps(team_event, ensure_ascii=False) + "\n")
             i += 1
 
-        _submissions = adapter.get_submissions(is_frozen=False)
+        _, _submissions = adapter.get_submissions()
         for submission in _submissions:
             submission_data = {
                 "id": submission.id,

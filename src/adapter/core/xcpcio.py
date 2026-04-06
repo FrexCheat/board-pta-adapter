@@ -125,7 +125,7 @@ class XCPCIOAdapter:
             teams.append(team)
         return teams
 
-    def get_submissions(self, is_frozen: bool = True) -> Tuple[List[Submission], List[Submission]]:
+    def get_submissions(self) -> Tuple[List[Submission], List[Submission]]:
         submissions: List[Submission] = []
         submissions_unfrozen: List[Submission] = []
 
@@ -152,10 +152,8 @@ class XCPCIOAdapter:
                 _timestamp = (_submit_at - _start_time).total_seconds() * 1000
                 _submission["timestamp"] = _timestamp
 
-                if is_frozen and _submit_at > _frozen_time:
+                if _submit_at > _frozen_time:
                     _submission["status"] = SubmissionStatus.FROZEN
-                else:
-                    _submission["status"] = self.get_status(s.status)
 
                 _submission["language"] = self.get_languages(s.compiler)
 

@@ -21,11 +21,11 @@ def generate() -> None:
 
         logger.info("generating students.json...")
         students = adapter.get_students()
-        storage.write_json("students.json", [s.model_dump(by_alias=True) for s in students])
+        storage.write_json("students.json", [s.model_dump(by_alias=True, exclude_none=True) for s in students])
 
         logger.info("generating teams.json...")
         teams = adapter.get_teams()
-        storage.write_json("teams.json", [t.model_dump(by_alias=True) for t in teams])
+        storage.write_json("teams.json", [t.model_dump(by_alias=True, exclude_none=True) for t in teams])
 
         logger.success("===> static data generated successfully.")
     except Exception:

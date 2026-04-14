@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -21,16 +21,16 @@ class Student(BaseModel):
     team_id: str
     name: str
     school: str
-    college: str
-    class_: str = Field(..., alias="class")
+    college: Optional[str] = None
+    class_: Optional[str] = Field(..., alias="class")
 
 
 class Team(BaseModel):
     id: str
     name: str
     school: str
-    college: str
-    class_: str = Field(..., alias="class")
+    college: Optional[str] = None
+    class_: Optional[str] = Field(..., alias="class")
 
 
 class Ranking(BaseModel):

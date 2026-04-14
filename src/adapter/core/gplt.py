@@ -1,6 +1,7 @@
 import time
 from typing import List
 
+import numpy as np
 from pydantic import TypeAdapter
 
 from adapter.models.config import Config
@@ -40,8 +41,9 @@ class GPLTAdapter:
         df["id"] = df["id"].astype(str).str.strip()
         df["team_id"] = df["team_id"].astype(str).str.strip()
         df["name"] = df["name"].astype(str).str.strip()
+
         student_list_adapter = TypeAdapter(List[Student])
-        data = df.to_dict(orient="records")
+        data = df.replace({np.nan: None}).to_dict(orient="records")
         students = student_list_adapter.validate_python(data)
         return students
 
@@ -53,7 +55,8 @@ class GPLTAdapter:
         df.columns = ["id", "name", "school", "college", "class"]
         df["id"] = df["id"].astype(str).str.strip()
         df = df.drop_duplicates(subset=["id"], keep="first")
-        data = df.to_dict(orient="records")
+        data = df.replace({np.nan: None}).to_dict(orient="records")
+
         team_list_adapter = TypeAdapter(List[Team])
         teams = team_list_adapter.validate_python(data)
         return teams

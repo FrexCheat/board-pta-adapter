@@ -1,3 +1,0 @@
-[submodule "vendor/avatar-registry"]
-	path = vendor/avatar-registry
-	url = git@github.com:hydro-dev/avatar-registry

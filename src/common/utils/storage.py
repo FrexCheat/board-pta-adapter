@@ -36,6 +36,6 @@ class OutputStorage:
                 handle_dst.write(handle_src.read())
         return target
 
-    def clear(self) -> None:
-        shutil.rmtree(self.base_dir)
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+    def clear(self, dir: str = "") -> None:
+        shutil.rmtree(self.base_dir / dir)
+        (self.base_dir / dir).mkdir(parents=True, exist_ok=True)

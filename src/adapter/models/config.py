@@ -35,11 +35,8 @@ class XCPCIOConfig(BaseModel):
     excel_path: str
     sheet_name: str
     contest_path: str
+    unfrozen_path: str
     config: XCPCIOConfigJsonConfig
-
-
-class CDPConfig(BaseModel):
-    output_dir: str
 
 
 class Config(BaseModel):
@@ -47,4 +44,3 @@ class Config(BaseModel):
     pta: PTAConfig
     gplt: GPLTConfig
     xcpcio: XCPCIOConfig
-    cdp: CDPConfig

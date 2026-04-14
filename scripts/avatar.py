@@ -1,45 +1,68 @@
+import argparse
 import hashlib
+import json
 import shutil
 from pathlib import Path
 
 from loguru import logger
 
 
-def rename_and_copy_images():
+def process(type: str = "xcpcio", ext: str = "png") -> None:
     base_path = Path.cwd()
-    src_dir = base_path / "vendor" / "avatar-registry" / "png"
-    dst_dir = base_path / "output" / "logos"
+    src_dir = base_path / "vendor" / "avatars" / "dist"
+    dst_dir = base_path / "output" / type / "logos"
+    xcpcio_org_path = base_path / "output" / "xcpcio" / "organizations.json"
+    gplt_team_path = base_path / "output" / "gplt" / "teams.json"
 
     dst_dir.mkdir(parents=True, exist_ok=True)
-
     if not src_dir.exists():
         logger.error(f"Error: {src_dir} does not exist!")
         return
 
-    image_files = list(src_dir.glob("*.png"))
-
-    if not image_files:
-        logger.error("Error: No PNG files found in the source directory!")
+    if type == "xcpcio" and not xcpcio_org_path.exists():
+        logger.error(
+            f"Error: {xcpcio_org_path} does not exist! Please run the CLI to generate the organizations.json file first."
+        )
         return
 
-    logger.info(f"Found {len(image_files)} PNG files. Starting processing...")
+    if type == "gplt" and not gplt_team_path.exists():
+        logger.error(
+            f"Error: {gplt_team_path} does not exist! Please run the CLI to generate the teams.json file first."
+        )
+        return
 
-    for file_path in image_files:
-        original_full_name = file_path.name
-        clean_name = file_path.stem
+    shutil.rmtree(dst_dir)
+    dst_dir.mkdir(parents=True, exist_ok=True)
 
-        logger.info(f"Processing: {original_full_name} ...")
+    orgs = []
 
-        md5_hash = hashlib.md5(clean_name.encode("utf-8")).hexdigest()
-        new_filename = f"{md5_hash[:8]}.png"
+    if type == "xcpcio":
+        with open(xcpcio_org_path, "r", encoding="utf-8") as f:
+            _orgs = json.load(f)
+            orgs = list({org["name"] for org in _orgs})
+    elif type == "gplt":
+        with open(gplt_team_path, "r", encoding="utf-8") as f:
+            _teams = json.load(f)
+            orgs = list(set({team["school"] for team in _teams}))
 
-        target_path = dst_dir / new_filename
-        shutil.copy2(file_path, target_path)
-
-        logger.info(f"Renamed to: {new_filename}")
-
-    logger.info(f"Task completed! All files saved to: {dst_dir}")
+    for org in orgs:
+        _hash = hashlib.md5(org.encode("utf-8")).hexdigest()[:8]
+        src_file = src_dir / f"{_hash}.{ext}"
+        if src_file.exists():
+            shutil.copy2(src_dir / f"{_hash}.{ext}", dst_dir / f"{_hash}.{ext}")
+        else:
+            logger.warning(f"Warning: {src_file} does not exist! {org} will use a default avatar.")
+            shutil.copy2(src_dir / f"a6b83b4d.{ext}", dst_dir / f"{_hash}.{ext}")
 
 
 if __name__ == "__main__":
-    rename_and_copy_images()
+    parser = argparse.ArgumentParser(description="Rename and copy image files.")
+    parser.add_argument("-t", "--type", default="xcpcio", help="Type of images to process")
+    parser.add_argument("-e", "--ext", default="png", help="Type of images to copy")
+    args = parser.parse_args()
+    if args.type not in ["xcpcio", "gplt"]:
+        logger.error("Invalid type specified. Use 'xcpcio' or 'gplt'.")
+    elif args.ext not in ["png", "webp"]:
+        logger.error("Invalid extension specified. Use 'png' or 'webp'.")
+    else:
+        process(type=args.type, ext=args.ext)

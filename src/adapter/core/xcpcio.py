@@ -4,8 +4,8 @@ from typing import List, Tuple
 
 import pendulum
 
-from adapter.models.config import Config, XCPCIOConfigJsonConfig
-from adapter.models.xcpcio import Organization, Submission, SubmissionStatus, Team
+from adapter.models.config import Config
+from adapter.models.xcpcio import Organization, Submission, Team
 from common.pta.client import PTAClient
 from common.utils.excel import SheetReader
 
@@ -13,32 +13,31 @@ LANGUAGE_MAPPING = {
     "GCC": "C",
     "CLANG": "C",
     "MODERN_GCC": "C",
-    "GXX": "C++",
-    "CLANGXX": "C++",
-    "PYPY3": "Python",
-    "PYTHON3": "Python",
-    "PYTHON2": "Python",
-    "JAVAC": "Java",
+    "GXX": "CPP",
+    "CLANGXX": "CPP",
+    "PYPY3": "PYTHON",
+    "PYTHON3": "PYTHON",
+    "PYTHON2": "PYTHON",
+    "JAVAC": "JAVA",
 }
 
 STATUS_MAPPING = {
-    "WAIT": SubmissionStatus.WAITING,
-    "WAITING": SubmissionStatus.WAITING,
-    "PENDING": SubmissionStatus.PENDING,
-    "JUDGING": SubmissionStatus.JUDGING,
-    "RUNNING": SubmissionStatus.RUNNING,
-    "ACCEPTED": SubmissionStatus.ACCEPTED,
-    "WRONG_ANSWER": SubmissionStatus.WRONG_ANSWER,
-    "COMPILE_ERROR": SubmissionStatus.COMPILATION_ERROR,
-    "RUNTIME_ERROR": SubmissionStatus.RUNTIME_ERROR,
-    "SEGMENTATION_FAULT": SubmissionStatus.RUNTIME_ERROR,
-    "NON_ZERO_EXIT_CODE": SubmissionStatus.RUNTIME_ERROR,
-    "FLOAT_POINT_EXCEPTION": SubmissionStatus.RUNTIME_ERROR,
-    "TIME_LIMIT_EXCEEDED": SubmissionStatus.TIME_LIMIT_EXCEEDED,
-    "MEMORY_LIMIT_EXCEEDED": SubmissionStatus.MEMORY_LIMIT_EXCEEDED,
-    "OUTPUT_LIMIT_EXCEEDED": SubmissionStatus.OUTPUT_LIMIT_EXCEEDED,
-    "PRESENTATION_ERROR": SubmissionStatus.PRESENTATION_ERROR,
-    "SYSTEM_ERROR": SubmissionStatus.SYSTEM_ERROR,
+    "WAIT": "WAITING",
+    "WAITING": "WAITING",
+    "PENDING": "PENDING",
+    "JUDGING": "JUDGING",
+    "RUNNING": "RUNNING",
+    "ACCEPTED": "ACCEPTED",
+    "WRONG_ANSWER": "WRONG_ANSWER",
+    "COMPILE_ERROR": "COMPILATION_ERROR",
+    "RUNTIME_ERROR": "RUNTIME_ERROR",
+    "SEGMENTATION_FAULT": "RUNTIME_ERROR",
+    "NON_ZERO_EXIT_CODE": "RUNTIME_ERROR",
+    "FLOAT_POINT_EXCEPTION": "RUNTIME_ERROR",
+    "TIME_LIMIT_EXCEEDED": "TIME_LIMIT_EXCEEDED",
+    "MEMORY_LIMIT_EXCEEDED": "MEMORY_LIMIT_EXCEEDED",
+    "OUTPUT_LIMIT_EXCEEDED": "OUTPUT_LIMIT_EXCEEDED",
+    "PRESENTATION_ERROR": "PRESENTATION_ERROR",
 }
 
 OFFICIAL_SCHOOLS = {"郑州轻工业大学"}
@@ -55,14 +54,11 @@ class XCPCIOAdapter:
 
     @staticmethod
     def get_languages(language: str) -> str:
-        return LANGUAGE_MAPPING.get(language, language)
+        return LANGUAGE_MAPPING.get(language, "UNKNOWN")
 
     @staticmethod
-    def get_status(status: str) -> SubmissionStatus:
-        return STATUS_MAPPING.get(status, SubmissionStatus.UNKNOWN)
-
-    def get_config(self) -> XCPCIOConfigJsonConfig:
-        return self.config.xcpcio.config
+    def get_status(status: str) -> str:
+        return STATUS_MAPPING.get(status, "UNKNOWN")
 
     def get_organizations(self, enable_logo: bool = True) -> List[Organization]:
         organizations: List[Organization] = []
@@ -153,7 +149,7 @@ class XCPCIOAdapter:
                 _submission["timestamp"] = _timestamp
 
                 if _submit_at > _frozen_time:
-                    _submission["status"] = SubmissionStatus.FROZEN
+                    _submission["status"] = "FROZEN"
 
                 _submission["language"] = self.get_languages(s.compiler)
 

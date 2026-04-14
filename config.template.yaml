@@ -16,7 +16,8 @@ xcpcio:
   output_dir: "./output/xcpcio"
   excel_path: "./templates/xcpc.xlsx"
   sheet_name: "template"
-  contest_path: "school-contest/zzuli/school-based/18th"
+  contest_path: "school-contest/zzuli/18th"
+  unfrozen_path: "unfrozen-randomId"
   config:
     contest_name: ""
     start_time: 1775440800000 # milliseconds
@@ -70,6 +71,3 @@ xcpcio:
         bronze: 12
       unofficial:
         gold: 10
-
-cdp:
-  output_dir: "./output/cdp"

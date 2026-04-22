@@ -83,7 +83,7 @@ class XCPCIOAdapter:
             organizations.append(organization)
         return organizations
 
-    def get_teams(self, single: bool = False) -> List[Team]:
+    def get_teams(self) -> List[Team]:
         teams: List[Team] = []
 
         source = self.sheet.load()
@@ -111,10 +111,7 @@ class XCPCIOAdapter:
                 _teams["group"].append("unofficial")
 
             _members = [item["member_1"], item["member_2"], item["member_3"]]
-            if single and not SheetReader.is_empty(_members[0]):
-                _teams["members"] = [_members[0]]
-            else:
-                _teams["members"] = [m for m in _members if not SheetReader.is_empty(m)]
+            _teams["members"] = [m for m in _members if not SheetReader.is_empty(m)]
 
             _teams["location"] = item["room"] + "-" + item["loc_num"]
             team = Team.model_validate(_teams)
@@ -148,6 +145,7 @@ class XCPCIOAdapter:
                 _timestamp = (_submit_at - _start_time).total_seconds() * 1000
                 _submission["timestamp"] = _timestamp
 
+                _submission["status"] = self.get_status(s.status)
                 if _submit_at > _frozen_time:
                     _submission["status"] = "FROZEN"
 

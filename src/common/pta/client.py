@@ -15,7 +15,6 @@ class PTAClient:
     API_ROOT = "https://pintia.cn/api"
     REQUEST_TIMEOUT_SECONDS = 15
     MAX_RETRIES = 3
-    RETRY_BACKOFF_SECONDS = 2
 
     def __init__(self, pta_session: str, problem_set_id: str) -> None:
         self.pta_session = pta_session
@@ -54,9 +53,9 @@ class PTAClient:
                     attempt=attempt,
                     max_retries=self.MAX_RETRIES,
                     path=path,
-                    sleep=self.RETRY_BACKOFF_SECONDS,
+                    sleep=2,
                 )
-                time.sleep(self.RETRY_BACKOFF_SECONDS)
+                time.sleep(2)
 
         raise PTAClientError(f"Failed to fetch PTA API after {self.MAX_RETRIES} attempts: {url}") from last_error
 

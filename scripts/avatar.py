@@ -14,7 +14,6 @@ def process(type: str = "xcpcio", ext: str = "png") -> None:
     xcpcio_org_path = base_path / "output" / "xcpcio" / "organizations.json"
     gplt_team_path = base_path / "output" / "gplt" / "teams.json"
 
-    dst_dir.mkdir(parents=True, exist_ok=True)
     if not src_dir.exists():
         logger.error(f"Error: {src_dir} does not exist!")
         return
@@ -35,7 +34,6 @@ def process(type: str = "xcpcio", ext: str = "png") -> None:
     dst_dir.mkdir(parents=True, exist_ok=True)
 
     orgs = []
-
     if type == "xcpcio":
         with open(xcpcio_org_path, "r", encoding="utf-8") as f:
             _orgs = json.load(f)

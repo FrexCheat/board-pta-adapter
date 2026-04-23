@@ -1,38 +1,38 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
 class Image(BaseModel):
-    url: Optional[str] = None
-    mime: Optional[str] = None
-    base64: Optional[str] = None
-    type: Optional[Literal["png", "svg", "jpg", "jpeg"]] = None
-    width: Optional[int] = None
-    height: Optional[int] = None
-    preset: Optional[Literal["ICPC", "CCPC", "HUNAN_CPC"]] = None
+    url: str | None = None
+    mime: str | None = None
+    base64: str | None = None
+    type: Literal["png", "svg", "jpg", "jpeg"] | None = None
+    width: int | None = None
+    height: int | None = None
+    preset: Literal["ICPC", "CCPC", "HUNAN_CPC"] | None = None
 
 
 class Organization(BaseModel):
-    id: str = None
-    name: str = None
-    logo: Optional[Image] = None
+    id: str
+    name: str
+    logo: Image | None = None
 
 
 class Team(BaseModel):
-    id: str = None
-    name: str = None
-    organization_id: str = None
-    group: List[str] = Field(default_factory=list)
-    coaches: Optional[List[str]] = None
-    members: Optional[List[str]] = None
-    location: Optional[str] = None
+    id: str
+    name: str
+    organization_id: str
+    group: list[str] = Field(default_factory=list)
+    coaches: list[str] | None = None
+    members: list[str] = Field(default_factory=list)
+    location: str | None = None
 
 
 class Submission(BaseModel):
-    id: str = None
-    team_id: str = None
-    problem_id: int = None
-    timestamp: int = None
-    status: str = None
-    language: Optional[str] = None
+    id: str
+    team_id: str
+    problem_id: int
+    timestamp: int
+    status: str
+    language: str

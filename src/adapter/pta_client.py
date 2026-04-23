@@ -1,10 +1,10 @@
 import time
-from typing import Any, Dict
+from typing import Any
 
 import requests
 from loguru import logger
 
-from common.models.pta import CommonRankings, ProblemSet, ProblemTypes, Submissions
+from adapter.models.pta import CommonRankings, ProblemSet, ProblemTypes, Submissions
 
 
 class PTAClientError(RuntimeError):
@@ -20,20 +20,20 @@ class PTAClient:
         self.pta_session = pta_session
         self.problem_set_id = problem_set_id
         self.session = requests.Session()
-        self._configure_session()
-
-    def _configure_session(self) -> None:
         self.session.cookies.update({"PTASession": self.pta_session})
         self.session.headers.update(
             {
                 "Content-Type": "application/json;charset=UTF-8",
                 "Accept": "application/json;charset=UTF-8",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+                ),
             }
         )
         self._request(f"/problem-sets/{self.problem_set_id}")
 
-    def _request(self, path: str, params: Dict[str, Any] | None = None) -> requests.Response:
+    def _request(self, path: str, params: dict[str, Any] | None = None) -> requests.Response:
         url = f"{self.API_ROOT}{path}"
         last_error: requests.RequestException | None = None
 
@@ -59,7 +59,7 @@ class PTAClient:
 
         raise PTAClientError(f"Failed to fetch PTA API after {self.MAX_RETRIES} attempts: {url}") from last_error
 
-    def _get(self, path: str, params: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    def _get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         return self._request(path, params=params).json()
 
     def fetch_problem_set(self) -> ProblemSet:

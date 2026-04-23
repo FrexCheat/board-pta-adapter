@@ -1,13 +1,12 @@
 import time
-from typing import List
 
 import numpy as np
 from pydantic import TypeAdapter
 
 from adapter.models.config import Config
 from adapter.models.gplt import Contest, Ranking, Student, Team
-from common.pta.client import PTAClient
-from common.utils.excel import SheetReader
+from adapter.pta_client import PTAClient
+from adapter.utils import SheetReader
 
 
 class GPLTAdapter:
@@ -23,18 +22,14 @@ class GPLTAdapter:
         problem_set = self.pta_client.fetch_problem_set()
         problem_types = self.pta_client.fetch_problem_types()
         problem_list = problem_types.labels
-        contest = Contest(
+        return Contest(
             title=problem_set.problemSet.name,
             standard_1=self.config.gplt.standard_1,
             standard_2=self.config.gplt.standard_2,
             problems=[{"id": p.id, "label": p.label, "score": p.score} for p in problem_list],
         )
-        _contest = Contest.model_validate(contest)
-        return _contest
 
-    def get_students(self) -> List[Student]:
-        students: List[Student] = []
-
+    def get_students(self) -> list[Student]:
         source = self.sheet.load()
         df = source.iloc[:, [0, 1, 2, 3, 5, 6]].copy()
         df.columns = ["id", "team_id", "name", "school", "college", "class"]
@@ -42,14 +37,11 @@ class GPLTAdapter:
         df["team_id"] = df["team_id"].astype(str).str.strip()
         df["name"] = df["name"].astype(str).str.strip()
 
-        student_list_adapter = TypeAdapter(List[Student])
+        student_list_adapter = TypeAdapter(list[Student])
         data = df.replace({np.nan: None}).to_dict(orient="records")
-        students = student_list_adapter.validate_python(data)
-        return students
+        return student_list_adapter.validate_python(data)
 
-    def get_teams(self) -> List[Team]:
-        teams: List[Team] = []
-
+    def get_teams(self) -> list[Team]:
         source = self.sheet.load()
         df = source.iloc[:, [1, 4, 3, 5, 6]].copy()
         df.columns = ["id", "name", "school", "college", "class"]
@@ -57,13 +49,11 @@ class GPLTAdapter:
         df = df.drop_duplicates(subset=["id"], keep="first")
         data = df.replace({np.nan: None}).to_dict(orient="records")
 
-        team_list_adapter = TypeAdapter(List[Team])
-        teams = team_list_adapter.validate_python(data)
-        return teams
+        team_list_adapter = TypeAdapter(list[Team])
+        return team_list_adapter.validate_python(data)
 
-    def get_rankings(self) -> List[Ranking]:
-        rankings: List[Ranking] = []
-
+    def get_rankings(self) -> list[Ranking]:
+        rankings: list[Ranking] = []
         first_page = self.pta_client.fetch_common_rankings(0, 100)
         total_count = first_page.total
         page_count = total_count // 100 + (1 if total_count % 100 else 0)
@@ -77,7 +67,6 @@ class GPLTAdapter:
                     score=item.totalScore,
                     problems_score={k: v.score for k, v in item.problemScoreByProblemSetProblemId.items()},
                 )
-                _ranking = Ranking.model_validate(ranking)
-                rankings.append(_ranking)
+                rankings.append(ranking)
             time.sleep(1)
         return rankings

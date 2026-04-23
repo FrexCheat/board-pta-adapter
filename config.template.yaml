@@ -18,6 +18,7 @@ xcpcio:
   sheet_name: "template"
   contest_path: "school-contest/zzuli/18th"
   unfrozen_path: "unfrozen-randomId"
+  official_schools: ["郑州轻工业大学"]
   config:
     contest_name: ""
     start_time: 1775440800000 # milliseconds

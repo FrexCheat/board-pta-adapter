@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -13,7 +11,7 @@ class Contest(BaseModel):
     title: str
     standard_1: int
     standard_2: int
-    problems: List[Problem]
+    problems: list[Problem]
 
 
 class Student(BaseModel):
@@ -21,20 +19,20 @@ class Student(BaseModel):
     team_id: str
     name: str
     school: str
-    college: Optional[str] = None
-    class_: Optional[str] = Field(..., alias="class")
+    college: str | None = None
+    class_: str | None = Field(..., alias="class")
 
 
 class Team(BaseModel):
     id: str
     name: str
     school: str
-    college: Optional[str] = None
-    class_: Optional[str] = Field(..., alias="class")
+    college: str | None = None
+    class_: str | None = Field(..., alias="class")
 
 
 class Ranking(BaseModel):
     id: str
     rank: int
     score: int
-    problems_score: Dict[str, int]
+    problems_score: dict[str, int]

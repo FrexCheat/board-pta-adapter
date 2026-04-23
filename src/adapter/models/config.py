@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PTAConfig(BaseModel):
@@ -14,7 +14,7 @@ class GPLTConfig(BaseModel):
     standard_2: int
 
 
-class XCPCIOConfigJsonConfig(BaseModel):
+class XCPCIOContestConfig(BaseModel):
     contest_name: str
     start_time: int
     end_time: int
@@ -36,7 +36,8 @@ class XCPCIOConfig(BaseModel):
     sheet_name: str
     contest_path: str
     unfrozen_path: str
-    config: XCPCIOConfigJsonConfig
+    official_schools: list[str] = Field(default_factory=list)
+    config: XCPCIOContestConfig
 
 
 class Config(BaseModel):

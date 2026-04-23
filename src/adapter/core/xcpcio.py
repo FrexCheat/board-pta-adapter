@@ -1,13 +1,12 @@
 import hashlib
 import time
-from typing import List, Tuple
 
 import pendulum
 
 from adapter.models.config import Config
-from adapter.models.xcpcio import Organization, Submission, Team
-from common.pta.client import PTAClient
-from common.utils.excel import SheetReader
+from adapter.models.xcpcio import Image, Organization, Submission, Team
+from adapter.pta_client import PTAClient
+from adapter.utils import SheetReader
 
 LANGUAGE_MAPPING = {
     "GCC": "C",
@@ -40,8 +39,6 @@ STATUS_MAPPING = {
     "PRESENTATION_ERROR": "PRESENTATION_ERROR",
 }
 
-OFFICIAL_SCHOOLS = {"郑州轻工业大学"}
-
 
 class XCPCIOAdapter:
     def __init__(self, config: Config):
@@ -60,8 +57,18 @@ class XCPCIOAdapter:
     def get_status(status: str) -> str:
         return STATUS_MAPPING.get(status, "UNKNOWN")
 
-    def get_organizations(self, enable_logo: bool = True) -> List[Organization]:
-        organizations: List[Organization] = []
+    @staticmethod
+    def _organization_id(school: str) -> str:
+        return hashlib.md5(school.encode("utf-8")).hexdigest()[:8]
+
+    def _team_group(self, school: str) -> list[str]:
+        official_schools = set(self.config.xcpcio.official_schools)
+        if school in official_schools:
+            return ["official"]
+        return ["unofficial"]
+
+    def get_organizations(self) -> list[Organization]:
+        organizations: list[Organization] = []
 
         source = self.sheet.load()
         df = source.iloc[:, [4]].copy()
@@ -69,99 +76,96 @@ class XCPCIOAdapter:
         df["school"] = df["school"].astype(str).str.strip()
         df_unique = df.drop_duplicates(subset=["school"], keep="first")
         school_set = df_unique["school"].tolist()
-        for item in school_set:
-            _hash = hashlib.md5(item.encode("utf-8")).hexdigest()[:8]
-            _organizations = dict()
-            _organizations["id"] = _hash
-            _organizations["name"] = item
-
-            if enable_logo:
-                _organizations["logo"] = dict()
-                _organizations["logo"]["url"] = f"{self.config.xcpcio.contest_path}/assets/logos/{_hash}.png"
-
-            organization = Organization.model_validate(_organizations)
+        for school in school_set:
+            organization_id = self._organization_id(school)
+            organization_kwargs = {
+                "id": organization_id,
+                "name": school,
+            }
+            organization_kwargs["logo"] = Image(
+                url=f"{self.config.xcpcio.contest_path}/assets/logos/{organization_id}.png"
+            )
+            organization = Organization(**organization_kwargs)
             organizations.append(organization)
+
         return organizations
 
-    def get_teams(self) -> List[Team]:
-        teams: List[Team] = []
+    def get_teams(self) -> list[Team]:
+        teams: list[Team] = []
 
         source = self.sheet.load()
         df = source.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7]].copy()
         df.columns = ["room", "loc_num", "id", "name", "school", "member_1", "member_2", "member_3"]
-        df["id"] = df["id"].astype(str).str.strip()
-        df["name"] = df["name"].astype(str)
-        df["school"] = df["school"].astype(str).str.strip()
+        df["room"] = df["room"].astype(str).str.strip()
         df["loc_num"] = df["loc_num"].astype(str).str.strip()
+        df["id"] = df["id"].astype(str).str.strip()
+        df["name"] = df["name"].astype(str).str.strip()
+        df["school"] = df["school"].astype(str).str.strip()
         df["member_1"] = df["member_1"].astype(str).str.strip()
         df["member_2"] = df["member_2"].astype(str).str.strip()
         df["member_3"] = df["member_3"].astype(str).str.strip()
         data = df.to_dict(orient="records")
         for item in data:
-            _hash = hashlib.md5(item["school"].encode("utf-8")).hexdigest()[:8]
-            _teams = dict()
-            _teams["id"] = item["id"]
-            _teams["name"] = item["name"]
-            _teams["organization_id"] = _hash
-
-            _teams["group"] = []
-            if item["school"] in OFFICIAL_SCHOOLS:
-                _teams["group"].append("official")
-            else:
-                _teams["group"].append("unofficial")
-
-            _members = [item["member_1"], item["member_2"], item["member_3"]]
-            _teams["members"] = [m for m in _members if not SheetReader.is_empty(m)]
-
-            _teams["location"] = item["room"] + "-" + item["loc_num"]
-            team = Team.model_validate(_teams)
+            members = [item["member_1"], item["member_2"], item["member_3"]]
+            team_kwargs = {
+                "id": item["id"],
+                "name": item["name"],
+                "organization_id": self._organization_id(item["school"]),
+                "group": self._team_group(item["school"]),
+            }
+            team_kwargs["members"] = [member for member in members if not SheetReader.is_empty(member)]
+            team_kwargs["location"] = f"{item['room']}-{item['loc_num']}"
+            team = Team(**team_kwargs)
             teams.append(team)
+
         return teams
 
-    def get_submissions(self) -> Tuple[List[Submission], List[Submission]]:
-        submissions: List[Submission] = []
-        submissions_unfrozen: List[Submission] = []
+    def get_submissions(self) -> tuple[list[Submission], list[Submission]]:
+        submissions: list[Submission] = []
+        submissions_unfrozen: list[Submission] = []
 
-        _contest_info = self.pta_client.fetch_problem_set()
-        _problem_info = self.pta_client.fetch_problem_types()
-        _submissions_info = self.pta_client.fetch_submissions(before=None, limit=200)
+        contest_info = self.pta_client.fetch_problem_set()
+        problem_info = self.pta_client.fetch_problem_types()
+        submissions_info = self.pta_client.fetch_submissions(before=None, limit=200)
 
-        _start_time = pendulum.parse(_contest_info.problemSet.startAt)
-        _end_time = pendulum.parse(_contest_info.problemSet.endAt)
-        _frozen_time = _end_time.subtract(seconds=self.config.xcpcio.config.frozen_time)
-        _problem_mapping = {p.id: p.problemPoolIndex - 1 for p in _problem_info.labels}
+        start_time = pendulum.parse(contest_info.problemSet.startAt)
+        end_time = pendulum.parse(contest_info.problemSet.endAt)
+        frozen_time = end_time.subtract(seconds=self.config.xcpcio.config.frozen_time)
+        problem_mapping = {problem.id: problem.problemPoolIndex - 1 for problem in problem_info.labels}
 
-        while _submissions_info.submissions:
-            _examMemberByUserId = _submissions_info.examMemberByUserId
-            _studentUserById = _submissions_info.studentUserById
-            for s in _submissions_info.submissions:
-                _submission = dict()
-                _submission_unfrozen = dict()
-                _submission["id"] = s.id
-                _submission["team_id"] = _studentUserById[_examMemberByUserId[s.userId].studentUserId].studentNumber
-                _submission["problem_id"] = _problem_mapping.get(s.problemSetProblemId)
+        while submissions_info.submissions:
+            exam_member_by_user_id = submissions_info.examMemberByUserId
+            student_user_by_id = submissions_info.studentUserById
+            for submission in submissions_info.submissions:
+                submit_at = pendulum.parse(submission.submitAt)
+                timestamp = int((submit_at - start_time).total_seconds() * 1000)
+                status = self.get_status(submission.status)
+                team_id = student_user_by_id[exam_member_by_user_id[submission.userId].studentUserId].studentNumber
+                problem_id = problem_mapping[submission.problemSetProblemId]
+                language = self.get_languages(submission.compiler)
 
-                _submit_at = pendulum.parse(s.submitAt)
-                _timestamp = (_submit_at - _start_time).total_seconds() * 1000
-                _submission["timestamp"] = _timestamp
-
-                _submission["status"] = self.get_status(s.status)
-                if _submit_at > _frozen_time:
-                    _submission["status"] = "FROZEN"
-
-                _submission["language"] = self.get_languages(s.compiler)
-
-                _submission_unfrozen = _submission.copy()
-                _submission_unfrozen["status"] = self.get_status(s.status)
-
-                submission = Submission.model_validate(_submission)
-                submission_unfrozen = Submission.model_validate(_submission_unfrozen)
-                submissions.append(submission)
-                submissions_unfrozen.append(submission_unfrozen)
+                submissions.append(
+                    Submission(
+                        id=submission.id,
+                        team_id=team_id,
+                        problem_id=problem_id,
+                        timestamp=timestamp,
+                        status="FROZEN" if submit_at > frozen_time else status,
+                        language=language,
+                    )
+                )
+                submissions_unfrozen.append(
+                    Submission(
+                        id=submission.id,
+                        team_id=team_id,
+                        problem_id=problem_id,
+                        timestamp=timestamp,
+                        status=status,
+                        language=language,
+                    )
+                )
 
             time.sleep(1)
-            _submissions_info = self.pta_client.fetch_submissions(
-                before=_submissions_info.submissions[-1].id, limit=200
-            )
+            submissions_info = self.pta_client.fetch_submissions(before=submissions_info.submissions[-1].id, limit=200)
 
         return submissions, submissions_unfrozen
